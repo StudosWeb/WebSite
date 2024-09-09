@@ -302,12 +302,12 @@
             document.querySelector(".btns-fixed-top button").addEventListener('click', notfs);
             document.querySelector(".modal-notf button").addEventListener('click', hideModal);
 
-            // Configurar ouvinte em tempo real para atualizações
-            db.collection('contentMaterias').onSnapshot(() => {
+            // Configurar ouvinte em tempo real para atualizações, apenas uma vez
+            db.collection('contentMaterias').onSnapshot(snapshot => {
                 updateMaterias(); // Atualiza a lista de matérias sempre que há uma mudança
             });
 
-            db.collection('notfs').onSnapshot(() => {
+            db.collection('notfs').onSnapshot(snapshot => {
                 loadNotifications(); // Atualiza a lista de notificações sempre que há uma mudança
             });
 
