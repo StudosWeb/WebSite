@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Solicitações</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo:wght@400;700&display=swap');
+
+        .container {
+            background-color: #10141d;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            max-width: 500px;
+            width: 105%;
+            box-sizing: border-box;
+            margin-top: 50px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: #11141c;
+            color: #e0e0e0;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]::placeholder {
+            color: #757575;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            background-color: #004080;
+        }
+
+        .checkbox {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox input {
+            display: none;
+        }
+
+        .checkbox label {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .checkbox input + label::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            background-color: transparent;
+            border: 1px solid #555;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            margin-bottom: 2px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .checkbox input:checked + label::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%23ffffff' d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+            background-color: #116acf;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 14px 14px;
+            border: 1px solid #116acf;
+        }
+
+        .checkbox input:checked + label {
+            font-weight: bold;
+        }
+
+                
+        select {
+            appearance: none;
+            padding-right: 30px;
+            cursor: pointer;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #11141c; /* fundo escuro para os campos */
+            color: #fff; /* texto branco */
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        select::after {
+            content: '\f078'; /* ícone de seta do Font Awesome */
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="menu-lateral">
+        <ul>
+            <li class="item-menu">
+                <a href="requests.html">
+                    <span class="icon"><i class="bi bi-briefcase-fill"></i></span>
+                    <span class="txt-link">Solicitações</span>
+                </a>
+            </li>
+            <li class="item-menu ativo">
+                <a href="avisos.html">
+                    <span class="icon"><i class="bi bi-plus-circle-dotted"></i></span>
+                    <span class="txt-link">Notificações</span>
+                </a>
+            </li>
+            <li class="item-menu">
+                <a href="../public/profile/">
+                    <span class="icon"><i class="bi bi-person-circle"></i></span>
+                    <span class="txt-link">Conta</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <section>
+        <h1>Add Notificação</h1>
+        <div class="container">
+            <input type="text" id="title" placeholder="Nome do aviso">
+            <input type="text" id="description" placeholder="Descrição do aviso">
+            <select id="categoria">
+                <option value="">Selecione uma Categoria</option>
+                <option value="atualizações">Atualização</option>
+            </select>
+            <button type="button">Enviar</button>
+        </div>
+    </section>
+
+     <!-- Modal de Carregamento -->
+ <div id="loading-modal" class="loading-modal hide">
+    <div class="loading-content">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+    <!-- Carregue o Firebase e a Configuração -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebaseConfig.js"></script>
+    
+    <script>
+        function showLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.remove('hide');
+}
+
+function hideLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.add('hide');
+}
+
+  // Inicializar Firebase
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // Função para enviar o aviso
+  document.querySelector('button').addEventListener('click', () => {
+    showLoadingModal()
+    const title = document.getElementById('title').value.trim();
+    const description = document.getElementById('description').value.trim();
+    const categoria = document.getElementById('categoria').value;
+
+    // Verificar se os campos estão preenchidos
+    if (title && description && categoria) {
+      // Adicionar o aviso ao Firestore
+      db.collection('notfs').add({
+        title: title,
+        description: description,
+        categoria: categoria,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp() // Adiciona um timestamp
+      })
+      .then(() => {
+        hideLoadingModal()
+        alert('Aviso enviado com sucesso!');
+        // Limpar os campos do formulário
+        document.getElementById('title').value = '';
+        document.getElementById('description').value = '';
+        document.getElementById('categoria').value = '';
+      })
+      .catch((error) => {
+        hideLoadingModal()
+        console.error('Erro ao enviar o aviso:', error);
+        alert('Erro ao enviar o aviso. Tente novamente.');
+      });
+    } else {
+        hideLoadingModal()
+      alert('Por favor, preencha todos os campos.');
+    }
+  });
+
+    </script>
+</body>
+</html>

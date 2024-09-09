@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <title>Perfil</title>
+    <style>
+    </style>
+</head>
+<body>
+
+ <main>
+    <div class="user-info">
+        <div class="user-img">
+            <i class="fa-regular fa-circle-user"></i>
+        </div>
+        <div class="name">
+            <p id="name">Carregando...</p>
+            <div class="icones">
+                <span id="representante-section"><i class="fa-solid fa-user-tie"></i></span>
+                <span id="resummer-section"><i class="fa-solid fa-graduation-cap"></i></span>
+            </div>
+        </div>
+        <p id="email">Carregando...</p>
+        <div class="btns">
+            <button type="button" id="copy-uid">Copy UID</button>
+            <button type="button" onclick="recoverPassword()">Redefinir Senha</button>
+        </div>
+        <div class="btns"><button type="button" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></div>
+    </div>
+ </main>
+
+  <!-- Modal de Carregamento -->
+  <div id="loading-modal" class="loading-modal hide">
+    <div class="loading-content">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+    <!-- Carregue o Firebase e a Configuração -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="../../../firebaseConfig.js"></script>
+
+    <script src="profile.js"></script>
+</body>
+</html>

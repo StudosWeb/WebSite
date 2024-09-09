@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Resumos de Ciências</title>
+    <link rel="stylesheet" href="materias.css">
+</head>
+<body>
+    <div class="menu">
+        <ul>
+            <li>
+                <a href="LP.html">
+                    <span class="icon"><i class="fas fa-book"></i></span>
+                    <span class="text">Português</span>
+                </a>
+            </li>
+            <li>
+                <a href="geo.html">
+                    <span class="icon"><i class="fas fa-globe"></i></span>
+                    <span class="text">Geografia</span>
+                </a>
+            </li>
+            <li>
+                <a href="hist.html">
+                    <span class="icon"><i class="fas fa-landmark"></i></span>
+                    <span class="text">História</span>
+                </a>
+            </li>
+            <li>
+                <a href="ingles.html">
+                    <span class="icon"><i class="fas fa-language"></i></span>
+                    <span class="text">Inglês</span>
+                </a>
+            </li>
+            <li>
+                <a href="mat.html">
+                    <span class="icon"><i class="fas fa-calculator"></i></span>
+                    <span class="text">Matemática</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="ciencias.html">
+                    <span class="icon"><i class="fas fa-flask"></i></span>
+                    <span class="text">Ciências</span>
+                </a>
+            </li>
+        </ul>
+        
+    </div>
+    <h1>Resumos de Ciências</h1>
+    <ul id="resumos-list">
+        <!-- Os resumos serão inseridos aqui -->
+    </ul>
+
+     <!-- Modal de Carregamento -->
+    <div id="loading-modal" class="loading-modal hide">
+        <div class="loading-content">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Configurar o Firebase e o Firestore -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="../../firebaseConfig.js"></script>
+    <script src="../js/materias.js"></script>
+    <script>
+
+        function showLoadingModal() {
+            const loadingModal = document.getElementById('loading-modal');
+            loadingModal.classList.remove('hide');
+        }
+
+        function hideLoadingModal() {
+            const loadingModal = document.getElementById('loading-modal');
+            loadingModal.classList.add('hide');
+        }
+        // Configurar o Firebase
+        const db = firebase.firestore();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const resumosList = document.getElementById('resumos-list');
+
+            // Buscar e exibir resumos da matéria 'matematica'
+            db.collection('materias').doc('ciencias').collection('resumos').get()
+                .then((querySnapshot) => {
+                    if (querySnapshot.empty) {
+                        resumosList.innerHTML = '<li style="color: red;">Nenhum resumo foi encontrado. Pedimos desculpas por isso.<a href="addSummary.html" id="addResumer" style="display: none;">Add Resumo</a></li>';
+                        return;
+                    }
+
+                    querySnapshot.forEach((doc) => {
+                        const resumo = doc.data();
+
+                        const resumoItem = document.createElement('li');
+
+                        const title = document.createElement('div');
+                        title.className = 'resume-title';
+                        title.textContent = resumo.title || 'Título não disponível';
+
+                        const summary = document.createElement('div');
+                        summary.className = 'resume-summary';
+                        summary.textContent = resumo.summary || 'Resumo não disponível';
+
+                        resumoItem.appendChild(title);
+                        resumoItem.appendChild(summary);
+
+                        resumosList.appendChild(resumoItem);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Erro ao buscar resumos:', error);
+                });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showLoadingModal()
+            setTimeout(() => {
+                hideLoadingModal()
+            }, 3000)
+        });
+    </script>
+</body>
+</html>

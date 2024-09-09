@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Notificações</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav class="menu-lateral">
+        <ul>
+            <li class="item-menu ativo">
+                <a href="requests.html">
+                    <span class="icon"><i class="bi bi-briefcase-fill"></i></span>
+                    <span class="txt-link">Solicitações</span>
+                </a>
+            </li>
+            <li class="item-menu ativo">
+                <a href="avisos.html">
+                    <span class="icon"><i class="bi bi-plus-circle-dotted"></i></span>
+                    <span class="txt-link">Notificações</span>
+                </a>
+            </li>
+            <li class="item-menu">
+                <a href="../public/profile/">
+                    <span class="icon"><i class="bi bi-person-circle"></i></span>
+                    <span class="txt-link">Conta</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <section>
+        <h1>Solicitações</h1>
+        <div id="requests-container">
+
+        </div>
+    </section>
+
+     <!-- Modal de Carregamento -->
+ <div id="loading-modal" class="loading-modal hide">
+    <div class="loading-content">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+    <!-- Carregue o Firebase e a Configuração -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebaseConfig.js"></script>
+    
+    <script>
+        function showLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.remove('hide');
+}
+
+function hideLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.add('hide');
+}
+
+        document.addEventListener('DOMContentLoaded', function() {
+    const requestsContainer = document.getElementById('requests-container');
+
+    // Função para exibir uma solicitação
+    function displayRequest(request, id) {
+        const requestItem = document.createElement('div');
+        requestItem.className = 'request-item';
+        requestItem.id = id; // Atribuir o ID ao elemento para facilitar a remoção
+
+        // Mensagem
+        const text = document.createElement('p');
+        text.textContent = `Mensagem: ${request.text || 'Não disponível'}`;
+        requestItem.appendChild(text);
+
+        // Link do Resumo, se disponível
+        if (request.resummer && request.resummerLink) {
+            const resummerLink = document.createElement('p');
+            resummerLink.textContent = `Link do Resumo: `;
+            const link = document.createElement('a');
+            link.href = request.resummerLink;
+            link.textContent = request.resummerLink;
+            link.target = '_blank'; // Abre o link em uma nova aba
+            resummerLink.appendChild(link);
+            requestItem.appendChild(resummerLink);
+        }
+
+        // Cargo
+        const represent = document.createElement('p');
+        represent.textContent = `Representante: ${request.represent ? 'Sim' : 'Não'}`;
+        requestItem.appendChild(represent);
+
+        const resummer = document.createElement('p');
+        resummer.textContent = `Resumos: ${request.resummer ? 'Sim' : 'Não'}`;
+        requestItem.appendChild(resummer);
+
+        // Botão Aceitar
+        const acceptButton = document.createElement('button');
+        acceptButton.textContent = 'Aceitar';
+        acceptButton.className = 'accept-button';
+        acceptButton.onclick = function() {
+            showLoadingModal()
+            firebase.firestore().collection('requests').doc(id).delete().then(() => {
+                const userRef = firebase.firestore().collection('users').doc(id);
+
+                userRef.get().then((userDoc) => {
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        userRef.update({
+                            representante: request.represent || false,
+                            resummer: request.resummer || false
+                        }).then(() => {
+                            hideLoadingModal()
+                            alert('Solicitação aceita e dados atualizados!');
+                        }).catch((error) => {
+                            hideLoadingModal()
+                            console.error('Erro ao atualizar dados do usuário:', error);
+                        });
+                    }
+                }).catch((error) => {
+                    console.error('Erro ao obter documento do usuário:', error);
+                });
+            }).catch((error) => {
+                console.error('Erro ao deletar solicitação:', error);
+            });
+        };
+
+        // Botão Recusar
+        const rejectButton = document.createElement('button');
+        rejectButton.textContent = 'Recusar';
+        rejectButton.className = 'reject-button';
+        rejectButton.onclick = function() {
+            firebase.firestore().collection('requests').doc(id).delete().then(() => {
+                alert('Solicitação recusada!');
+            }).catch((error) => {
+                console.error('Erro ao deletar solicitação:', error);
+            });
+        };
+
+        requestItem.appendChild(acceptButton);
+        requestItem.appendChild(rejectButton);
+
+        requestsContainer.appendChild(requestItem);
+    }
+
+    // Função para remover uma solicitação da interface
+    function removeRequest(id) {
+        const requestItem = document.getElementById(id);
+        if (requestItem) {
+            requestItem.remove();
+        }
+    }
+
+    // Escutar mudanças em tempo real no Firestore
+    firebase.firestore().collection('requests').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const requestData = change.doc.data();
+            const requestId = change.doc.id;
+
+            if (change.type === 'added') {
+                // Quando uma nova solicitação é adicionada
+                displayRequest(requestData, requestId);
+            } else if (change.type === 'removed') {
+                // Quando uma solicitação é removida
+                removeRequest(requestId);
+            }
+        });
+    });
+});
+
+    </script>
+</body>
+</html>

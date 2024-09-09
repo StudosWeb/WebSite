@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', sans-serif;
+}
+
+body {
+    height: 100vh;
+    background-color: #0a0c12;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+main {
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+}
+
+.loading-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 12, 18, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.loading-modal.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loading-content {
+    background-color: #1c1c1c;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.spinner {
+    width: 45px;
+    height: 45px;
+    border: 4px solid #c2c2c2;
+    border-top: 4px solid #2196F3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.user-info {
+    background-color: transparent;
+    padding: 25px;
+    border-radius: 10px;
+    text-align: center;
+    width: 100%;
+    max-width: 300px;
+    color: #f5f5f5;
+}
+
+.user-img {
+    font-size: 90px;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+.name {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: 15px;
+}
+
+.icones {
+    display: flex;
+    gap: .8rem;
+    position: absolute;
+    right: -130px;
+    top: -160px;
+    padding: 10px;
+    border-radius: 8px;
+    justify-content: center;
+}
+
+.name p {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.name span {
+    font-size: 18px;
+    color: #bbbbbb;
+}
+
+#representante-section, 
+#resummer-section {
+    display: none; /* Ocultar inicialmente */
+}
+
+/* Estilo base para as seções */
+span {
+    position: relative;
+    display: inline-block;
+    font-size: 24px;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+/* Adiciona rótulo de descrição com ::after */
+span::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; /* Ajusta a posição abaixo do ícone */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 10px;
+    background-color: #000;
+    color: #fff;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Mostrar o rótulo ao passar o mouse */
+#representante-section:hover::after {
+    content: 'Representante';
+    opacity: 1;
+    visibility: visible;
+}
+
+#resummer-section:hover::after {
+    content: 'Resumidor';
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Alterar a cor do ícone ao passar o mouse */
+span:hover i {
+    color: #007BFF; /* Ou qualquer outra cor desejada */
+}
+
+p#email {
+    font-size: 15px;
+    color: #d1d1d1;
+    margin-bottom: 25px;
+}
+.btns {
+    display: flex;
+    gap: 0.5rem;
+    width: 120%;
+    margin-left: -10%;
+    max-width: 450px;
+    justify-content: space-between;
+    box-sizing: border-box; /* Garante que padding e bordas sejam incluídos nas dimensões do botão */
+}
+
+button {
+    background: transparent;
+    border: 2px solid transparent;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 15px;
+    transition: background 0.4s ease, transform 0.2s ease, border 0.4s ease;
+    flex: 1 1 50%; /* Reduz para 48% para dar mais espaço para o texto */
+    min-width: 10%; /* Garante que o botão tenha um tamanho mínimo suficiente */
+    white-space: nowrap; /* Impede a quebra de linha no texto */
+    text-align: center;
+    box-sizing: border-box; /* Inclui padding e borda no tamanho total do botão */
+}
+
+button#logout {
+    flex: 1 1 100%; /* O botão de logout ocupa toda a linha */
+    margin-top: 10px;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #007BFF, #0056b3);
+    border: 2px solid #007BFF;
+    transform: scale(1.05);
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+/* Ícones */
+i.fa-right-from-bracket, 
+i.fa-user-tie, 
+i.fa-graduation-cap {
+    margin-right: 6px;
+}
+
+/* Responsividade para telas menores */
+@media (max-width: 600px) {
+    button {
+        padding: 10px 16px;
+        font-size: 14px;
+        min-width: 120px; /* Ajusta o tamanho mínimo para telas menores */
+    }
+
+    .icones {
+        right: -80px;
+    }
+}

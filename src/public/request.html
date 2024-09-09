@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Solicitação</title>
+    <link rel="stylesheet" href="request.css">
+</head>
+<body>
+    <div class="container">
+        <input type="text" id="text-input" placeholder="Digite algo">
+        <div class="checkbox">
+            <input type="checkbox" id="represent">
+            <label for="represent">Representante</label>
+            <input type="checkbox" id="resummer">
+            <label for="resummer">Resumos</label>
+        </div>
+        <div id="resummer-link-container" style="display: none;">
+            <input type="text" id="resummer-link" placeholder="Cole o link do resumo">
+        </div>
+        <button type="button" id="post-button">Enviar</button>
+        <button type="button" id="cancel-button" onclick="cancel()">Cancelar</button>
+    </div>
+
+        <!-- Modal de Carregamento -->
+    <div id="loading-modal" class="loading-modal hide">
+        <div class="loading-content">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Carregue o Firebase e a Configuração -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebaseConfig.js"></script>
+    <script>
+        function showLoadingModal() {
+            const loadingModal = document.getElementById('loading-modal');
+            loadingModal.classList.remove('hide');
+        }
+
+        function hideLoadingModal() {
+            const loadingModal = document.getElementById('loading-modal');
+            loadingModal.classList.add('hide');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const postButton = document.getElementById('post-button');
+            const resummerCheckbox = document.getElementById('resummer');
+            const resummerLinkContainer = document.getElementById('resummer-link-container');
+
+            // Mostrar ou esconder o campo de link do resumo baseado no checkbox
+            resummerCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    resummerLinkContainer.style.display = 'block';
+                } else {
+                    resummerLinkContainer.style.display = 'none';
+                }
+            });
+
+            postButton.addEventListener('click', function() {
+                const textInput = document.getElementById('text-input').value.trim();
+                const isRepresent = document.getElementById('represent').checked;
+                const isResummer = document.getElementById('resummer').checked;
+                const resummerLink = isResummer ? document.getElementById('resummer-link').value.trim() : '';
+
+                firebase.auth().onAuthStateChanged(user => {
+                    if (user) {
+                        showLoadingModal()
+                        const uid = user.uid;
+                        const requestRef = firebase.firestore().collection('requests').doc(uid);
+
+                        requestRef.set({
+                            text: textInput,
+                            represent: isRepresent,
+                            resummer: isResummer,
+                            resummerLink: resummerLink, // Adiciona o link do resumo
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            alert('Sua solicitação está em análise. Se não aparecer um ícone no seu perfil em até 24 horas, isso significa que a solicitação não foi aceita.');
+                            // Limpar os campos
+                            hideLoadingModal()
+                            document.getElementById('text-input').value = '';
+                            document.getElementById('represent').checked = false;
+                            document.getElementById('resummer').checked = false;
+                            document.getElementById('resummer-link').value = '';
+                            resummerLinkContainer.style.display = 'none'; // Esconde o campo de link após o envio
+                            window.location.href = 'home.html'
+                        }).catch(error => {
+                            hideLoadingModal()
+                            console.error('Erro ao salvar dados:', error);
+                        });
+                    } else {
+                        alert('Usuário não autenticado.');
+                    }
+                });
+            });
+        });
+
+        function cancel() {
+            window.location.href = 'home.html'
+        }
+    </script>
+</body>
+</html>
