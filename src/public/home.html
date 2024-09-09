@@ -48,7 +48,7 @@
     </nav>
 
     <div class="btns-fixed">
-        <button type="button" id="representente" onclick="alert('Ops.. Não encontramos essa função.')" style="display: none;"><i class="bi bi-clipboard2-plus"></i></button>
+        <button type="button" id="representente" onclick="representPage()" style="display: none;"><i class="bi bi-clipboard2-plus"></i></button>
         <button type="button" id="addResumer" onclick="addSumery()" style="display: none;"><i class="bi bi-plus"></i></button>
        </div>
 
@@ -58,7 +58,8 @@
         <div class="avisos">
             <h2 style="color: #116acf;">Avisos 9ºanos</h2>
             <div class="item">
-                <h3>Sem avisos no momento!</h3>
+                <h3></h3>
+                <p id="sala"></p>
             </div>
         </div>
         <div class="avisos2">
@@ -104,6 +105,9 @@
     </div>
 </div>
 
+<script>
+   
+</script>
     <script>
         function showLoadingModal() {
     const loadingModal = document.getElementById('loading-modal');
@@ -316,6 +320,68 @@ document.addEventListener('DOMContentLoaded', function() {
     db.collection('notfs').onSnapshot((snapshot) => {
         loadNotifications(); // Atualiza a lista de notificações sempre que há uma mudança
     });
+});
+
+// avisos
+
+const avisosContainer = document.querySelector('.avisos');
+
+// Função para exibir um aviso
+function displayAviso(aviso, classes) {
+    const avisoItem = document.createElement('div');
+    avisoItem.className = 'item';
+
+    const avisoText = document.createElement('h3');
+    avisoText.textContent = aviso;
+
+    const classText = document.createElement('p');
+    classText.id = 'sala';
+    classText.textContent = `Classes: ${classes.length ? classes.join(', ') : 'Nenhuma classe selecionada'}`;
+
+    avisoItem.appendChild(avisoText);
+    avisoItem.appendChild(classText);
+
+    avisosContainer.appendChild(avisoItem);
+}
+
+// Função para exibir a mensagem de "Sem Avisos"
+function displayNoAvisos() {
+    const avisoItem = document.createElement('div');
+    avisoItem.className = 'item';
+
+    const avisoText = document.createElement('h3');
+    avisoText.textContent = 'Sem avisos no momento';
+
+    const classText = document.createElement('p');
+    classText.id = 'sala';
+    classText.textContent = '';
+
+    avisoItem.appendChild(avisoText);
+    avisoItem.appendChild(classText);
+
+    avisosContainer.appendChild(avisoItem);
+}
+
+// Carregar os avisos em tempo real
+db.collection('avisos').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+    // Primeiro, remover todos os itens de aviso (manter o h2)
+    const avisoItems = avisosContainer.querySelectorAll('.item');
+    avisoItems.forEach(item => item.remove());
+
+    if (snapshot.empty) {
+        // Se não houver avisos, exibir mensagem
+        displayNoAvisos();
+    } else {
+        // Se houver avisos, exibi-los
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const aviso = data.aviso || 'Aviso não disponível';
+            const classes = data.classes || [];
+
+            // Exibir o aviso no HTML
+            displayAviso(aviso, classes);
+        });
+    }
 });
     </script>
 </body>

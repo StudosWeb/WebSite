@@ -507,11 +507,17 @@ section > .inputs > button{
 }
 
 .avisos .item {
-    background-color: #10141b;
-    padding: 8px;
-    border-radius: 8px;
+    background-color: transparent;
     color: #f1f1f1;
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border-bottom: 1px solid #ccc;
 }
+
+.avisos .item:last-child {
+    border-bottom: none;
+}
+
 .avisos2 .item2 {
     background-color: #10141b00;
     padding: 8px;
