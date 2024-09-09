@@ -82,256 +82,264 @@
     <script src="../js/auth-guard.js"></script>
 
     <script>
-        // Inicializar Firestore
+        document.addEventListener('DOMContentLoaded', function() {
+            const auth = firebase.auth();
         const db = firebase.firestore();
-        const auth = firebase.auth();
+    let materiasListenerAdded = false;
+    let notfsListenerAdded = false;
 
-        // Funções de modal de carregamento
-        function showLoadingModal() {
-            const loadingModal = document.getElementById('loading-modal');
-            loadingModal.classList.remove('hide');
-        }
+    // Funções de modal de carregamento
+    function showLoadingModal() {
+        const loadingModal = document.getElementById('loading-modal');
+        loadingModal.classList.remove('hide');
+    }
 
-        function hideLoadingModal() {
-            const loadingModal = document.getElementById('loading-modal');
-            loadingModal.classList.add('hide');
-        }
+    function hideLoadingModal() {
+        const loadingModal = document.getElementById('loading-modal');
+        loadingModal.classList.add('hide');
+    }
 
-        // Função para atualizar a lista de matérias
-        function updateMaterias() {
-            const materiasContainer = document.querySelector('.materias');
-            materiasContainer.innerHTML = ''; // Limpa o conteúdo existente
+    // Função para atualizar a lista de matérias
+    function updateMaterias() {
+        console.log('Chamando updateMaterias');
+        const materiasContainer = document.querySelector('.materias');
+        materiasContainer.innerHTML = ''; // Limpa o conteúdo existente
 
-            db.collection('contentMaterias').get().then((querySnapshot) => {
+        db.collection('contentMaterias').get().then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const materiaNome = doc.id;
+
+                // Obter a contagem de resumos para cada matéria
+                db.collection('materias').doc(materiaNome).collection('resumos').get().then((snapshot) => {
+                    const resumoCount = snapshot.size;
+                    const materiaItem = displayMateria(data, resumoCount);
+                    materiasContainer.appendChild(materiaItem);
+                }).catch((error) => {
+                    console.error('Erro ao contar resumos:', error);
+                    const materiaItem = displayMateria(data, 'Não disponível');
+                    materiasContainer.appendChild(materiaItem);
+                });
+            });
+        }).catch((error) => {
+            console.error('Erro ao obter as matérias:', error);
+        });
+    }
+
+    // Função para exibir uma matéria
+    function displayMateria(data, resumoCount) {
+        const materiaItem = document.createElement('div');
+        materiaItem.className = 'materia-item';
+
+        const name = document.createElement('p');
+        name.id = 'name';
+        name.textContent = data.nome || 'Nome não disponível';
+
+        const summaryCount = document.createElement('p');
+        summaryCount.id = 'summaryCount';
+        summaryCount.textContent = `Resumos: ${resumoCount}`;
+
+        const trimestre = document.createElement('p');
+        trimestre.id = 'trimestre';
+        trimestre.innerHTML = `${data.trimestre || 'Trimestre não disponível'}`;
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.textContent = 'Ver Matéria';
+        button.onclick = () => {
+            window.location.href = data.href || '#';
+        };
+
+        materiaItem.appendChild(name);
+        materiaItem.appendChild(summaryCount);
+        materiaItem.appendChild(trimestre);
+        materiaItem.appendChild(button);
+
+        return materiaItem;
+    }
+
+    // Funções de notificação
+    function loadNotifications() {
+        console.log('Chamando loadNotifications');
+        const notfsList = document.getElementById('notfs-list');
+        notfsList.innerHTML = ''; // Limpa a lista antes de adicionar os novos avisos
+
+        db.collection('notfs').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
+            if (querySnapshot.empty) {
+                // Caso não haja notificações
+                const li = document.createElement('li');
+                li.id = 'notfs-item';
+                const description = document.createElement('p');
+                description.id = 'description';
+                description.textContent = 'Sem notificações no momento';
+                li.appendChild(description);
+                notfsList.appendChild(li);
+            } else {
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const materiaNome = doc.id;
 
-                    // Obter a contagem de resumos para cada matéria
-                    db.collection('materias').doc(materiaNome).collection('resumos').get().then((snapshot) => {
-                        const resumoCount = snapshot.size;
-                        const materiaItem = displayMateria(data, resumoCount);
-                        materiasContainer.appendChild(materiaItem);
-                    }).catch((error) => {
-                        console.error('Erro ao contar resumos:', error);
-                        const materiaItem = displayMateria(data, 'Não disponível');
-                        materiasContainer.appendChild(materiaItem);
-                    });
-                });
-            }).catch((error) => {
-                console.error('Erro ao obter as matérias:', error);
-            });
-        }
-
-        // Função para exibir uma matéria
-        function displayMateria(data, resumoCount) {
-            const materiaItem = document.createElement('div');
-            materiaItem.className = 'materia-item';
-
-            const name = document.createElement('p');
-            name.id = 'name';
-            name.textContent = data.nome || 'Nome não disponível';
-
-            const summaryCount = document.createElement('p');
-            summaryCount.id = 'summaryCount';
-            summaryCount.textContent = `Resumos: ${resumoCount}`;
-
-            const trimestre = document.createElement('p');
-            trimestre.id = 'trimestre';
-            trimestre.innerHTML = `${data.trimestre || 'Trimestre não disponível'}`;
-
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.textContent = 'Ver Matéria';
-            button.onclick = () => {
-                window.location.href = data.href || '#';
-            };
-
-            materiaItem.appendChild(name);
-            materiaItem.appendChild(summaryCount);
-            materiaItem.appendChild(trimestre);
-            materiaItem.appendChild(button);
-
-            return materiaItem;
-        }
-
-        // Funções de notificação
-        function loadNotifications() {
-            const notfsList = document.getElementById('notfs-list');
-            notfsList.innerHTML = ''; // Limpa a lista antes de adicionar os novos avisos
-
-            db.collection('notfs').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
-                if (querySnapshot.empty) {
-                    // Caso não haja notificações
+                    // Criar o elemento li para cada aviso
                     const li = document.createElement('li');
                     li.id = 'notfs-item';
+                    li.classList.add('notf-item'); // Adiciona uma classe para personalização
+
+                    // Criar o div para as informações
+                    const infoDiv = document.createElement('div');
+                    infoDiv.classList.add('info');
+
+                    // Adicionar o título (name)
+                    const name = document.createElement('h3');
+                    name.id = 'name';
+                    name.textContent = data.title || 'Título não disponível';
+
+                    // Adicionar a descrição (description)
                     const description = document.createElement('p');
                     description.id = 'description';
-                    description.textContent = 'Sem notificações no momento';
-                    li.appendChild(description);
+                    description.textContent = data.description || 'Descrição não disponível';
+
+                    // Adicionar o título e a descrição ao div
+                    infoDiv.appendChild(name);
+                    infoDiv.appendChild(description);
+
+                    // Adicionar o div info ao li
+                    li.appendChild(infoDiv);
+
+                    // Adicionar o li à lista ul
                     notfsList.appendChild(li);
-                } else {
-                    querySnapshot.forEach((doc) => {
-                        const data = doc.data();
-
-                        // Criar o elemento li para cada aviso
-                        const li = document.createElement('li');
-                        li.id = 'notfs-item';
-                        li.classList.add('notf-item'); // Adiciona uma classe para personalização
-
-                        // Criar o div para as informações
-                        const infoDiv = document.createElement('div');
-                        infoDiv.classList.add('info');
-
-                        // Adicionar o título (name)
-                        const name = document.createElement('h3');
-                        name.id = 'name';
-                        name.textContent = data.title || 'Título não disponível';
-
-                        // Adicionar a descrição (description)
-                        const description = document.createElement('p');
-                        description.id = 'description';
-                        description.textContent = data.description || 'Descrição não disponível';
-
-                        // Adicionar o título e a descrição ao div
-                        infoDiv.appendChild(name);
-                        infoDiv.appendChild(description);
-
-                        // Adicionar o div info ao li
-                        li.appendChild(infoDiv);
-
-                        // Adicionar o li à lista ul
-                        notfsList.appendChild(li);
-                    });
-                }
-            }).catch((error) => {
-                console.error('Erro ao carregar avisos:', error);
-            });
-        }
-
-        function notfs() {
-            const modal = document.getElementById('modal-notf');
-            modal.style.display = 'flex'; // Exibe o modal
-        }
-
-        function hideModal() {
-            const modal = document.getElementById('modal-notf');
-            modal.style.display = 'none'; // Oculta o modal
-        }
-
-        function representPage() {
-            showLoadingModal();
-            setTimeout(() => {
-                hideLoadingModal();
-                window.location.href = './rep/';
-            }, 2000);
-        }
-
-        function addSumery() {
-            showLoadingModal();
-            setTimeout(() => {
-                hideLoadingModal();
-                window.location.href = 'addSummary';
-            }, 2000);
-        }
-
-        // Função para verificar o campo resummer no Firestore
-        function checkResummer() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    const userRef = db.collection('users').doc(user.uid);
-                    userRef.get().then(doc => {
-                        if (doc.exists) {
-                            const resummer = doc.data().resummer;
-                            const addResumerBtn = document.getElementById('addResumer');
-                            if (resummer) {
-                                addResumerBtn.style.display = 'block';
-                            } else {
-                                addResumerBtn.style.display = 'none';
-                            }
-                        } else {
-                            console.log('Documento do usuário não encontrado');
-                        }
-                    }).catch(error => {
-                        console.error('Erro ao recuperar documento:', error);
-                    });
-                } else {
-                    console.log('Usuário não autenticado');
-                }
-            });
-        }
-
-        // Função para verificar o campo represent no Firestore
-        function checkRepresent() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    const userRef = db.collection('users').doc(user.uid);
-                    userRef.get().then(doc => {
-                        if (doc.exists) {
-                            const represent = doc.data().representante;
-                            const addRepresentBtn = document.getElementById('representente');
-                            if (represent) {
-                                addRepresentBtn.style.display = 'block';
-                            } else {
-                                addRepresentBtn.style.display = 'none';
-                            }
-                        } else {
-                            console.log('Documento do usuário não encontrado');
-                        }
-                    }).catch(error => {
-                        console.error('Erro ao recuperar documento:', error);
-                    });
-                } else {
-                    console.log('Usuário não autenticado');
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Exibir o modal de carregamento
-            showLoadingModal();
-            setTimeout(() => {
-                hideLoadingModal();
-            }, 2000);
-
-            // Atualizar matérias e notificações
-            updateMaterias();
-            loadNotifications();
-
-            // Adicionar os eventos nos botões
-            document.querySelector(".btns-fixed-top button").addEventListener('click', notfs);
-            document.querySelector(".modal-notf button").addEventListener('click', hideModal);
-
-            // Configurar ouvinte em tempo real para atualizações, apenas uma vez
-            db.collection('contentMaterias').onSnapshot(snapshot => {
-                updateMaterias(); // Atualiza a lista de matérias sempre que há uma mudança
-            });
-
-            db.collection('notfs').onSnapshot(snapshot => {
-                loadNotifications(); // Atualiza a lista de notificações sempre que há uma mudança
-            });
-
-            // Verificar campos de usuário
-            checkResummer();
-            checkRepresent();
-
-            // Hover e click menu
-            const menuItem = document.querySelectorAll('.item-menu');
-            function selectLink() {
-                menuItem.forEach(item => item.classList.remove('ativo'));
-                this.classList.add('ativo');
-            }
-            menuItem.forEach(item => item.addEventListener('click', selectLink));
-
-            // Expandir menu
-            const btnExp = document.querySelector('#btn-exp');
-            const menuSide = document.querySelector('.menu-lateral');
-            if (btnExp) {
-                btnExp.addEventListener('click', function() {
-                    menuSide.classList.toggle('expandir');
                 });
             }
+        }).catch((error) => {
+            console.error('Erro ao carregar avisos:', error);
         });
+    }
+
+    function notfs() {
+        const modal = document.getElementById('modal-notf');
+        modal.style.display = 'flex'; // Exibe o modal
+    }
+
+    function hideModal() {
+        const modal = document.getElementById('modal-notf');
+        modal.style.display = 'none'; // Oculta o modal
+    }
+
+    function representPage() {
+        showLoadingModal();
+        setTimeout(() => {
+            hideLoadingModal();
+            window.location.href = './rep/';
+        }, 2000);
+    }
+
+    function addSumery() {
+        showLoadingModal();
+        setTimeout(() => {
+            hideLoadingModal();
+            window.location.href = 'addSummary';
+        }, 2000);
+    }
+
+    // Função para verificar o campo resummer no Firestore
+    function checkResummer() {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const userRef = db.collection('users').doc(user.uid);
+                userRef.get().then(doc => {
+                    if (doc.exists) {
+                        const resummer = doc.data().resummer;
+                        const addResumerBtn = document.getElementById('addResumer');
+                        if (resummer) {
+                            addResumerBtn.style.display = 'block';
+                        } else {
+                            addResumerBtn.style.display = 'none';
+                        }
+                    } else {
+                        console.log('Documento do usuário não encontrado');
+                    }
+                }).catch(error => {
+                    console.error('Erro ao recuperar documento:', error);
+                });
+            } else {
+                console.log('Usuário não autenticado');
+            }
+        });
+    }
+
+    // Função para verificar o campo represent no Firestore
+    function checkRepresent() {
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                const userRef = db.collection('users').doc(user.uid);
+                userRef.get().then(doc => {
+                    if (doc.exists) {
+                        const represent = doc.data().representante;
+                        const addRepresentBtn = document.getElementById('representente');
+                        if (represent) {
+                            addRepresentBtn.style.display = 'block';
+                        } else {
+                            addRepresentBtn.style.display = 'none';
+                        }
+                    } else {
+                        console.log('Documento do usuário não encontrado');
+                    }
+                }).catch(error => {
+                    console.error('Erro ao recuperar documento:', error);
+                });
+            } else {
+                console.log('Usuário não autenticado');
+            }
+        });
+    }
+
+    // Exibir o modal de carregamento
+    showLoadingModal();
+    setTimeout(() => {
+        hideLoadingModal();
+    }, 2000);
+
+    
+
+    // Adicionar os eventos nos botões
+    document.querySelector(".btns-fixed-top button").addEventListener('click', notfs);
+    document.querySelector(".modal-notf button").addEventListener('click', hideModal);
+
+    // Adicionar ouvintes apenas uma vez
+    if (!materiasListenerAdded) {
+        db.collection('contentMaterias').onSnapshot(() => {
+            updateMaterias(); // Atualiza a lista de matérias sempre que há uma mudança
+        });
+        materiasListenerAdded = true;
+    }
+
+    if (!notfsListenerAdded) {
+        db.collection('notfs').onSnapshot(() => {
+            loadNotifications(); // Atualiza a lista de notificações sempre que há uma mudança
+        });
+        notfsListenerAdded = true;
+    }
+
+    // Verificar campos de usuário
+    checkResummer();
+    checkRepresent();
+
+    // Hover e click menu
+    const menuItem = document.querySelectorAll('.item-menu');
+    function selectLink() {
+        menuItem.forEach(item => item.classList.remove('ativo'));
+        this.classList.add('ativo');
+    }
+    menuItem.forEach(item => item.addEventListener('click', selectLink));
+
+    // Expandir menu
+    const btnExp = document.querySelector('#btn-exp');
+    const menuSide = document.querySelector('.menu-lateral');
+    if (btnExp) {
+        btnExp.addEventListener('click', function() {
+            menuSide.classList.toggle('expandir');
+        });
+    }
+});
+
     </script>
 </body>
 </html>
