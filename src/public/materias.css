@@ -29,6 +29,23 @@
             position: relative; /* Adiciona position relative para o posicionamento absoluto */
         }
 
+        .menu-mobile {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .menu button {
+            display: none;
+            background-color: transparent; 
+            border: none; 
+            color: #fff; 
+            font-size: 1.5rem;
+            transition: all .5s ease-in-out;
+        }
+        .menu button:hover {
+            color: #116acf;
+        }
+
         .menu ul li {
             position: relative; /* Adiciona position relative para garantir que a posição absoluta funcione corretamente */
         }
@@ -169,3 +186,56 @@
         #resumos-list li a {
             color: #116acf;
         }
+
+@media only screen and (max-width: 810px) {
+    .menu button {
+        display: block;
+    }
+
+    .menu-mobile {
+        align-items: start;
+        flex-direction: column;
+        position: absolute;
+        background-color: #0e1017;
+        padding: 10px 20px;
+        height: 100vh;
+        width: 200px;
+        left: -300px; /* Mover o menu para fora da tela */
+        transition: left 0.3s ease; /* Adiciona transição suave */
+    }
+    
+    .menu-mobile.open {
+        left: 0; /* Posição visível */
+    }
+    
+
+    menu ul li a::before {
+        display: none;
+    }
+
+    .menu ul li a:hover::before,
+    .menu ul li a:hover {
+        color: #116acf;
+        width: 0;
+    }
+
+    .menu ul li:last-child {
+        color: #116acf; /* Mantém a cor do último link */
+        position: absolute; /* Define o posicionamento absoluto */
+        bottom: 0px;
+        transition: color .5s ease-in-out; /* Transição de cor, se necessário */
+    }
+
+    ul#resumos-list {
+        width: 90%;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .menu ul li:last-child {
+        color: #116acf; /* Mantém a cor do último link */
+        position: absolute; /* Define o posicionamento absoluto */
+        bottom: -7px;
+        transition: color .5s ease-in-out; /* Transição de cor, se necessário */
+    }
+}

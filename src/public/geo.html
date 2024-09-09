@@ -4,43 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <title>Resumos de Geografia</title>
     <link rel="stylesheet" href="materias.css">
 </head>
 <body>
     <div class="menu">
         <ul>
+            <button id="openMenu"><i class="bi bi-list"></i></button>
+            <div class="menu-mobile">
+                <button id="closeMenu"><i class="bi bi-x-lg"></i></button>
              <li>
-                <a href="ciencias.html">
+                <a href="ciencias">
                     <span class="icon"><i class="fas fa-flask"></i></span>
                     <span class="text">Ciências</span>
                 </a>
             <li>
-                <a href="LP.html">
+                <a href="LP">
                     <span class="icon"><i class="fas fa-book"></i></span>
                     <span class="text">Português</span>
                 </a>
             </li>
             <li>
-                <a href="hist.html">
+                <a href="hist">
                     <span class="icon"><i class="fas fa-landmark"></i></span>
                     <span class="text">História</span>
                 </a>
             </li>
             <li>
-                <a href="ingles.html">
+                <a href="ingles">
                     <span class="icon"><i class="fas fa-language"></i></span>
                     <span class="text">Inglês</span>
                 </a>
             </li>
             <li>
-                <a href="mat.html">
+                <a href="mat">
                     <span class="icon"><i class="fas fa-calculator"></i></span>
                     <span class="text">Matemática</span>
                 </a>
             </li>
+            <li></li>
+        </div>
             <li>
-                <a href="geo.html">
+                <a href="geo">
                     <span class="icon"><i class="fas fa-globe"></i></span>
                     <span class="text">Geografia</span>
                 </a>
@@ -66,6 +72,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
     <script src="../../firebaseConfig.js"></script>
     <script src="../js/materias.js"></script>
+    <script src="../js/menuMaterias.js"></script>
+    <script src="../js/auth-guard.js"></script>
     <script>
 
         function showLoadingModal() {
@@ -87,7 +95,7 @@
             db.collection('materias').doc('geografia').collection('resumos').get()
                 .then((querySnapshot) => {
                     if (querySnapshot.empty) {
-                        resumosList.innerHTML = '<li style="color: red;">Nenhum resumo foi encontrado. Pedimos desculpas por isso.<a href="addSummary.html" id="addResumer" style="display: none;">Add Resumo</a></li>';
+                        resumosList.innerHTML = '<li style="color: red;">Nenhum resumo foi encontrado. Pedimos desculpas por isso.<a href="addSummary" id="addResumer" style="display: none;">Add Resumo</a></li>';
                         return;
                     }
 
@@ -119,7 +127,7 @@
             showLoadingModal()
             setTimeout(() => {
                 hideLoadingModal()
-            }, 3000)
+            }, 1000)
         });
     </script>
 </body>

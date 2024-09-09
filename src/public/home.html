@@ -9,31 +9,31 @@
 </head>
 <body>
     <div class="btns-fixed-top">
-        <button type="button"><i class="bi bi-bell-fill"></i></button>
+        <button type="button" onclick="notfs()"><i class="bi bi-bell-fill"></i></button>
     </div>
 
     <nav class="menu-lateral">
         <ul>
             <li class="item-menu ativo">
-                <a href="./home.html" class="active">
+                <a href="./home" class="active">
                     <span class="icon"><i class="bi bi-house-door"></i></span>
                     <span class="txt-link">Home</span>
                 </a>
             </li>
             <li class="item-menu">
-                <a href="materias.html">
+                <a href="materias">
                     <span class="icon"><i class="bi bi-columns-gap"></i></span>
                     <span class="txt-link">Matérias</span>
                 </a>
             </li>
             <li class="item-menu">
-                <a href="canais.html">
+                <a href="canais">
                     <span class="icon"><i class="bi bi-chat-right-text"></i></span>
                     <span class="txt-link">Canais</span>
                 </a>
             </li>
             <li class="item-menu">
-                <a href="request.html">
+                <a href="request">
                     <span class="icon"><i class="bi bi-briefcase"></i></span>
                     <span class="txt-link">Solicitar</span>
                 </a>
@@ -54,7 +54,31 @@
 
     <section>
         <h1>Home</h1>
+        <div class="inicio">
+            <h2>Bem-vindo(a), <span id="name" style="color: #116acf;"></span></h2>
+            
+            <p style="color: #fff;">O site de estudos foi criado com o objetivo de ajudar os estudantes do Ábaco a estudarem de maneira mais eficiente. A plataforma promove uma interação dinâmica entre os usuários, oferecendo resumos e canais de dúvidas para facilitar o aprendizado e a troca de informações.</p>
+        </div>
+        <br>
+        <div class="materias">
+            <div class="materia-item">
+                <p id="name"></p>
+                <p id="summaryCount"></p>
+                <p id="trimestre"></p>
+                <button>Ver Matéria</button>
+            </div>
+        </div>
     </section>
+
+    <div class="modal-notf" id="modal-notf">
+        <div class="modal-notf-content">
+            <div class="modal-notf-header">Notificação</div>
+             <ul id="notfs-list">
+                
+             </ul>
+            <button onclick="hideModal()">Fechar</button>
+        </div>
+    </div>
 
     <!-- Carregue o Firebase e a Configuração -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
@@ -130,6 +154,27 @@ function hideLoadingModal() {
             });
         }
 
+        firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            const uid = user.uid;
+            const userRef = firebase.firestore().collection('users').doc(uid);
+
+            // Obter os dados do usuário a partir do Firestore
+            userRef.get()
+                .then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        // Preencher os campos na interface
+                        document.getElementById('name').textContent = "@" + userData.name + "!" || 'Nome não disponível';
+                    } else {
+                        console.log('Nenhum documento encontrado!');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Erro ao obter documento:', error);
+                });
+        }
+    });
         // Função para verificar o campo resummer no Firestore
         function checkRepresent() {
             auth.onAuthStateChanged(user => {
@@ -164,7 +209,7 @@ function hideLoadingModal() {
             showLoadingModal()
             setTimeout(() => {
                 hideLoadingModal()
-                window.location.href = 'addSummary.html';
+                window.location.href = 'addSummary';
             }, 2000)
         }
 
@@ -175,6 +220,93 @@ function hideLoadingModal() {
                 window.location.href = './rep/'
             }, 2000);
         }
+         // Exibir o modal de notificações
+function notfs() {
+    const modal = document.getElementById('modal-notf');
+    modal.style.display = 'flex'; // Exibe o modal
+}
+
+// Função para carregar as notificações
+function loadNotifications() {
+    const notfsList = document.getElementById('notfs-list');
+    notfsList.innerHTML = ''; // Limpa a lista antes de adicionar os novos avisos
+
+    const db = firebase.firestore(); // Certifique-se de que o Firestore foi inicializado corretamente aqui
+
+    db.collection('notfs').orderBy('createdAt', 'desc').get().then((querySnapshot) => {
+        if (querySnapshot.empty) {
+            // Caso não haja notificações
+            const li = document.createElement('li');
+            li.id = 'notfs-item';
+            const description = document.createElement('p');
+            description.id = 'description';
+            description.textContent = 'Sem notificações no momento';
+            li.appendChild(description);
+            notfsList.appendChild(li);
+        } else {
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+
+                // Criar o elemento li para cada aviso
+                const li = document.createElement('li');
+                li.id = 'notfs-item';
+                li.classList.add('notf-item'); // Adiciona uma classe para personalização
+
+                // Criar o div para as informações
+                const infoDiv = document.createElement('div');
+                infoDiv.classList.add('info');
+
+                // Adicionar o título (name)
+                const name = document.createElement('h3');
+                name.id = 'name';
+                name.textContent = data.title || 'Título não disponível';
+
+                // Adicionar a descrição (description)
+                const description = document.createElement('p');
+                description.id = 'description';
+                description.textContent = data.description || 'Descrição não disponível';
+
+                // Adicionar o título e a descrição ao div
+                infoDiv.appendChild(name);
+                infoDiv.appendChild(description);
+
+                // Adicionar o div info ao li
+                li.appendChild(infoDiv);
+
+                // Adicionar o li à lista ul
+                notfsList.appendChild(li);
+            });
+        }
+    }).catch((error) => {
+        console.error('Erro ao carregar avisos:', error);
+    });
+}
+
+// Esconder o modal
+function hideModal() {
+    const modal = document.getElementById('modal-notf');
+    modal.style.display = 'none'; // Oculta o modal
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const db = firebase.firestore(); // Inicializa o Firestore quando o DOM está pronto
+
+    // Verificar se o Firestore está inicializado antes de carregar as notificações
+    if (firebase.apps.length > 0) {
+        loadNotifications(); // Carregar notificações após o DOM ser carregado
+    } else {
+        console.error("Firebase não inicializado corretamente.");
+    }
+
+    // Adicionar os eventos nos botões
+    document.querySelector(".btns-fixed-top button").addEventListener('click', notfs);
+    document.querySelector(".modal-notf button").addEventListener('click', hideModal);
+
+    // Configurar ouvinte em tempo real para atualizações na coleção notfs
+    db.collection('notfs').onSnapshot((snapshot) => {
+        loadNotifications(); // Atualiza a lista de notificações sempre que há uma mudança
+    });
+});
     </script>
 </body>
 </html>
