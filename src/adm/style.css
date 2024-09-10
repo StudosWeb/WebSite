@@ -49,7 +49,7 @@ ul{
 }
 
 ul li:last-child {
-    margin-top: 62vh;
+    margin-top: 50vh;
 }
 
 ul li.item-menu{
@@ -100,6 +100,7 @@ section {
 section h1{
     color: #007bff;
     font-size: 2.7rem;
+    margin-bottom: 20px;
 }
 
 #requests-container {
@@ -354,4 +355,8 @@ select {
     padding-right: 30px;
     cursor: pointer;
     background-color: #101219;
+}
+
+.requests {
+    margin-bottom: 10px;
 }

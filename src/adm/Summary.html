@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>Solicitações</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Exo:wght@400;700&display=swap');
+
+        .container {
+            background-color: #10141d;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            max-width: 500px;
+            width: 105%;
+            box-sizing: border-box;
+            margin-top: 50px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background-color: #11141c;
+            color: #e0e0e0;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]::placeholder {
+            color: #757575;
+        }
+
+        input[type="text"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            background-color: #004080;
+        }
+
+        .checkbox {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox input {
+            display: none;
+        }
+
+        .checkbox label {
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .checkbox input + label::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+            background-color: transparent;
+            border: 1px solid #555;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+            margin-bottom: 2px;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .checkbox input:checked + label::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%23ffffff' d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E");
+            background-color: #116acf;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: 14px 14px;
+            border: 1px solid #116acf;
+        }
+
+        .checkbox input:checked + label {
+            font-weight: bold;
+        }
+
+                
+        select {
+            appearance: none;
+            padding-right: 30px;
+            cursor: pointer;
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #11141c; /* fundo escuro para os campos */
+            color: #fff; /* texto branco */
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        select::after {
+            content: '\f078'; /* ícone de seta do Font Awesome */
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="menu-lateral">
+        <ul>
+            <li class="item-menu">
+                <a href="requests.html">
+                    <span class="icon"><i class="bi bi-briefcase-fill"></i></span>
+                    <span class="txt-link">Solicitações</span>
+                </a>
+            </li>
+            <li class="item-menu ativo">
+                <a href="avisos.html">
+                    <span class="icon"><i class="bi bi-plus-circle-dotted"></i></span>
+                    <span class="txt-link">Notificações</span>
+                </a>
+            </li>
+            <li class="item-menu">
+                <a href="Summary.html">
+                    <span class="icon"><i class="bi bi-journal-plus"></i></span>
+                    <span class="txt-link">Summarys</span>
+                </a>
+            </li>
+            <li class="item-menu">
+                <a href="../public/profile/">
+                    <span class="icon"><i class="bi bi-person-circle"></i></span>
+                    <span class="txt-link">Conta</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <section>
+        <h1>Summarys Requests</h1>
+        <div class="requests">
+            
+        </div>
+    </section>
+
+     <!-- Modal de Carregamento -->
+ <div id="loading-modal" class="loading-modal hide">
+    <div class="loading-content">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+    <!-- Carregue o Firebase e a Configuração -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="../../firebaseConfig.js"></script>
+    
+    <script>
+        function showLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.remove('hide');
+}
+
+function hideLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.add('hide');
+}
+
+// Configurar o Firebase
+const db = firebase.firestore();
+
+// Função para carregar os resumos de 'SummaryRequest' e exibi-los na página
+function loadSummaries() {
+    const summaryContainer = document.querySelector('.requests');
+
+    // Obter todos os resumos da coleção 'SummaryRequest' e atualizar a exibição em tempo real
+    db.collection('SummaryRequest').onSnapshot((snapshot) => {
+        summaryContainer.innerHTML = ''; // Limpar o container antes de adicionar novos itens
+
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            const userId = doc.id; // O ID do documento é o UID do usuário
+
+            // Verificar se o resumo foi aceito ou recusado
+            if (data.status?.Enviado || data.status?.Reprovado) {
+                return; // Se o resumo estiver aceito ou recusado, não mostrar na lista
+            }
+
+            // Obter o nome do usuário da coleção 'users' com base no UID
+            db.collection('users').doc(userId).get().then((userDoc) => {
+                const userName = userDoc.data()?.name;
+
+                if (!userName) {
+                    return; // Se não encontrar o nome, ignorar este documento
+                }
+
+                // Criar um novo item de resumo
+                const requestItem = document.createElement('div');
+                requestItem.classList.add('request-item');
+
+                // Atualizar o assunto com base no valor de data.subject
+                let subjectText;
+                switch (data.subject) {
+                    case 'matematica':
+                        subjectText = 'Matemática';
+                        break;
+                    case 'portugues':
+                        subjectText = 'Português';
+                        break;
+                    case 'historia':
+                        subjectText = 'História';
+                        break;
+                    case 'ciencias':
+                        subjectText = 'Ciências';
+                        break;
+                    case 'geografia':
+                        subjectText = 'Geografia';
+                        break;
+                    case 'ingles':
+                        subjectText = 'Inglês';
+                        break;
+                    // Adicione outros casos conforme necessário
+                    default:
+                        subjectText = 'Outro';
+                }
+                // Preencher as informações de resumo e usuário
+                requestItem.innerHTML = `
+                    <div class="info-summary">
+                        <h3 id="title" style="font-size: 1.5rem; color: #007bff;">${data.title}</h3>
+                        <p id="summary" style="font-size: 1.2rem;">${data.summary}</p>
+                        <p id="subject" style="font-size: 1rem;">Matéria: <span style="color: #007bff;">${subjectText}</span></p>
+                    </div>
+                    <div class="info-user">
+                        <p id="name" style="font-size: .80rem;">Por: ${userName}</p>
+                    </div>
+                    <div class="btns">
+                        <button type="button" class="revisarBtn" data-uid="${userId}" data-docid="${doc.id}">Revisar</button>
+                        <button type="button" class="acceptBtn" data-docid="${doc.id}" style="display: none;">Aceitar</button>
+                        <button type="button" class="rejectBtn" data-docid="${doc.id}" style="display: none;">Rejeitar</button>
+                    </div>
+                `;
+
+                // Adicionar o item ao container de resumos
+                summaryContainer.appendChild(requestItem);
+
+                // Evento de Revisar
+                const revisarBtn = requestItem.querySelector('.revisarBtn');
+                const acceptBtn = requestItem.querySelector('.acceptBtn');
+                const rejectBtn = requestItem.querySelector('.rejectBtn');
+
+                // Se o resumo já estiver em revisão, mostrar botões de aceitar/rejeitar diretamente
+                if (data.status?.Revisando) {
+                    revisarBtn.style.display = 'none';
+                    acceptBtn.style.display = 'inline-block';
+                    rejectBtn.style.display = 'inline-block';
+                }
+
+                revisarBtn.addEventListener('click', function () {
+                    const docId = this.getAttribute('data-docid');
+
+                    // Atualizar o status para 'Revisando'
+                    db.collection('SummaryRequest').doc(docId).update({
+                        'status.Revisando': true,
+                        'status.Pendente': false
+                    }).then(() => {
+                        console.log('Resumo está sendo revisado.');
+                        // Mostrar os botões de aceitar e recusar, e ocultar o botão de revisar
+                        revisarBtn.style.display = 'none';
+                        acceptBtn.style.display = 'inline-block';
+                        rejectBtn.style.display = 'inline-block';
+                    }).catch((error) => {
+                        console.error('Erro ao atualizar o status para revisando:', error);
+                    });
+                });
+
+                // Evento de Aceitar
+                acceptBtn.addEventListener('click', function () {
+                    const docId = this.getAttribute('data-docid');
+
+                    // Obter os dados do resumo e mover para a coleção 'materias'
+                    db.collection('SummaryRequest').doc(docId).get().then((docSnapshot) => {
+                        const summaryData = docSnapshot.data();
+
+                        // Adicionar o resumo na coleção 'materias'
+                        db.collection('materias').doc(summaryData.subject).collection('resumos').add({
+                            title: summaryData.title,
+                            summary: summaryData.summary,
+                            subject: summaryData.subject,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            console.log('Resumo adicionado à coleção materias.');
+
+                            // Atualizar o status para 'Enviado'
+                            db.collection('SummaryRequest').doc(docId).update({
+                                'status.Enviado': true,
+                                'status.Revisando': false
+                            }).then(() => {
+                                console.log('Status atualizado para Enviado.');
+                                // Remover o item da lista após ser aceito
+                                requestItem.remove();
+                            }).catch((error) => {
+                                console.error('Erro ao atualizar o status para Enviado:', error);
+                            });
+                        }).catch((error) => {
+                            console.error('Erro ao adicionar resumo na coleção materias:', error);
+                        });
+                    }).catch((error) => {
+                        console.error('Erro ao obter resumo da coleção SummaryRequest:', error);
+                    });
+                });
+
+                // Evento de Recusar
+                rejectBtn.addEventListener('click', function () {
+                    const docId = this.getAttribute('data-docid');
+
+                    // Atualizar o status para 'Reprovado'
+                    db.collection('SummaryRequest').doc(docId).update({
+                        'status.Reprovado': true,
+                        'status.Revisando': false
+                    }).then(() => {
+                        console.log('Resumo reprovado.');
+                        // Remover o item da lista após ser recusado
+                        requestItem.remove();
+                    }).catch((error) => {
+                        console.error('Erro ao atualizar o status para Reprovado:', error);
+                    });
+                });
+            }).catch((error) => {
+                console.error('Erro ao buscar o nome do usuário:', error);
+            });
+        });
+    });
+}
+
+// Chamar a função para carregar os resumos ao carregar a página
+window.onload = loadSummaries();
+
+    </script>
+</body>
+</html>

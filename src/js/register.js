@@ -10,8 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoadingModal();
             setTimeout(function() {
                 hideLoadingModal();
-                window.location.href = '../public/home';
-            }, 500);
+                window.location.href = '../public/home.html';
+            }, 2000);
         }
     });
 

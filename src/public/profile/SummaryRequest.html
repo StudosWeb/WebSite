@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../../css/profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <title>Summary Request</title>
+    <style>
+        .status span#status-name{
+            font-size: 1rem;
+            color: #fff;
+        }
+        .status span#divisao {
+            width: 30px;
+            height: 8px;
+            border-radius: 8px;
+            background-color: #2222227f;
+        }
+
+        .status .pendente,
+        .status .revisando,
+        .status .enviado,
+        .status .reprovado {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+        }
+
+        .status span.pulse {
+            width: 20px;
+            height: 20px;
+            background-color: #2222227f;
+            border-radius: 50%;
+        }
+
+        .status span.ativo {
+            background-color: #007bff;
+            box-shadow: 0 0 10px #0067d5;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 10px #0067d5;
+            }
+
+            50% {
+                box-shadow: 0 0 23px #0067d5;
+            }
+
+            100% {
+                box-shadow: 0 0 10px #0067d5;
+            }
+        }
+    </style>
+</head>
+<body>
+
+ <main>
+    <div class="status-info">
+        <div class="info" style="margin-bottom: 30px; width: 100%; text-align: center;">
+            <h2 id="title" style="font-size: 3rem; color: #007bff;">Carregando..</h2>
+            <p id="subject" style="font-size: 1.1rem; color: #fff;">Carregando..</p>
+        </div>
+        <div class="status" style="display: flex; gap: 2rem; align-items: center;">
+            <div class="pendente">
+                <span class="pulse"></span>
+                <span id="status-name">Pendente</span>
+            </div>
+            <span id="divisao"></span>
+            <div class="revisando">
+                <span class="pulse"></span>
+                <span id="status-name">Revisando</span>
+            </div>
+            <span id="divisao"></span>
+            <div class="enviado">
+                <span class="pulse"></span>
+                <span id="status-name">Aceito</span>
+            </div>
+            <div class="reprovado" style="display: none;">
+                <span class="pulse"></span>
+                <span id="status-name">Reprovado</span>
+            </div>
+        </div>
+    </div>
+ </main>
+
+  <!-- Modal de Carregamento -->
+  <div id="loading-modal" class="loading-modal hide">
+    <div class="loading-content">
+        <div class="spinner"></div>
+    </div>
+</div>
+
+    <!-- Carregue o Firebase e a Configuração -->
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
+    <script src="../../../firebaseConfig.js"></script>
+
+    <script>
+ // Configurar o Firebase
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+// Função para carregar o status do resumo
+function loadStatus() {
+    // Obter o usuário atual
+    const user = auth.currentUser;
+
+    if (user) {
+        const userId = user.uid;
+
+        // Obter o documento da coleção 'SummaryRequest' com o ID do usuário
+        db.collection('SummaryRequest').doc(userId).onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                
+                // Atualizar o título e o assunto
+                document.getElementById('title').textContent = data.title || 'Sem Título';
+                
+                // Atualizar o assunto com base no valor de data.subject
+                let subjectText;
+                switch (data.subject) {
+                    case 'matematica':
+                        subjectText = 'Matemática';
+                        break;
+                    case 'portugues':
+                        subjectText = 'Português';
+                        break;
+                    case 'historia':
+                        subjectText = 'História';
+                        break;
+                    case 'ciencias':
+                        subjectText = 'Ciências';
+                        break;
+                    case 'geografia':
+                        subjectText = 'Geografia';
+                        break;
+                    case 'ingles':
+                        subjectText = 'Inglês';
+                        break;
+                    // Adicione outros casos conforme necessário
+                    default:
+                        subjectText = 'Outro';
+                }
+                document.getElementById('subject').textContent = subjectText || 'Sem Assunto';
+
+                // Atualizar o status
+                const status = data.status || {};
+
+                // Inicialmente mostrar todos os status exceto Reprovado
+                document.querySelector('.reprovado').style.display = 'none';
+                document.querySelector('.enviado').style.display = 'flex';
+                document.querySelector('.revisando').style.display = 'flex';
+                document.querySelector('.pendente').style.display = 'flex';
+
+                // Remove a classe ativo de todos os status
+                document.querySelectorAll('.status .pulse').forEach(pulse => pulse.classList.remove('ativo'));
+
+                if (status.Reprovado) {
+                    document.querySelector('.reprovado').style.display = 'flex';
+                    document.querySelector('.enviado').style.display = 'none'; // Ocultar "Enviado" se "Reprovado" estiver true
+                    document.querySelector('.reprovado .pulse').classList.add('ativo');
+                } else if (status.Enviado) {
+                    document.querySelector('.enviado').style.display = 'flex';
+                    document.querySelector('.enviado .pulse').classList.add('ativo');
+                } else if (status.Revisando) {
+                    document.querySelector('.revisando').style.display = 'flex';
+                    document.querySelector('.revisando .pulse').classList.add('ativo');
+                } else {
+                    document.querySelector('.pendente').style.display = 'flex';
+                    document.querySelector('.pendente .pulse').classList.add('ativo');
+                }
+            } else {
+                console.log('Nenhum documento encontrado para o usuário:', userId);
+            }
+        }, (error) => {
+            console.error('Erro ao obter o documento:', error);
+        });
+    } else {
+        console.log('Nenhum usuário autenticado.');
+    }
+}
+
+// Função para inicializar a aplicação após o usuário ter feito login
+function init() {
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            loadStatus();
+        } else {
+            console.log('Usuário não está autenticado.');
+        }
+    });
+}
+
+// Chamar a função para inicializar a aplicação
+init();
+    </script>
+</body>
+</html>

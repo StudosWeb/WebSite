@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sumery - Estudos</title>
+    <title>Summary - Estudos</title>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
@@ -72,52 +72,62 @@
                     } else {
                         console.log('Usuário não autorizado.');
                         // Usuário não é um 'resummer', redireciona para home.html
-                         window.location.href = 'home.html';
+                        window.location.href = 'home';
                     }
                 } catch (error) {
                     console.error('Erro ao verificar o usuário:', error);
-                    window.location.href = 'home.html'; // Redirecionar em caso de erro
+                    window.location.href = 'home'; // Redirecionar em caso de erro
                 }
             } else {
                 // Usuário não autenticado, redireciona para home.html
-                window.location.href = 'home.html';
+                window.location.href = 'home';
             }
         });
 
+        // Adicionar evento ao formulário de resumo
         document.getElementById('summaryForm').addEventListener('submit', function(event) {
             event.preventDefault(); // Evitar o envio padrão do formulário
-    
+
             const title = document.getElementById('title').value;
             const summary = document.getElementById('summary').value;
             const subject = document.getElementById('subject').value;
-    
+
             if (!title || !summary || !subject) {
                 alert('Por favor, preencha todos os campos.');
                 return;
             }
-    
+
             // Obter o UID do usuário autenticado
             auth.onAuthStateChanged(function(user) {
                 if (user) {
                     const uid = user.uid;
-    
-                    // Adicionar documento à coleção 'materias' com UID como nome do documento
-                    db.collection('materias').doc(subject).collection('resumos').doc(uid).set({
+
+                    // Adicionar o resumo à coleção 'SummaryRequest' usando o UID do usuário como o nome do documento
+                    db.collection('SummaryRequest').doc(uid).set({
                         title: title,
                         summary: summary,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        subject: subject, // Adicionando a matéria como um campo separado
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: {
+                            Pendente: true,
+                            Revisando: false,
+                            Enviado: false,
+                            Reprovado: false
+                        }
                     }).then(() => {
-                        alert('Resumo adicionado com sucesso!');
+                        alert('Sua solicitação foi enviada!');
                         document.getElementById('summaryForm').reset(); // Limpar o formulário
+                        window.location.href = './profile/SummaryRequest'
                     }).catch((error) => {
                         console.error('Erro ao adicionar resumo: ', error);
-                        alert('Erro ao adicionar resumo. Tente novamente.');
+                        alert('Erro ao solicitar. Tente novamente.');
                     });
                 } else {
                     alert('Usuário não autenticado. Por favor, faça login.');
                 }
             });
         });
+
     </script>    
 </body>
 </html>
