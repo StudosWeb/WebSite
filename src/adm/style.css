@@ -49,7 +49,7 @@ ul{
 }
 
 ul li:last-child {
-    margin-top: 50vh;
+    margin-top: 39vh;
 }
 
 ul li.item-menu{
@@ -110,8 +110,14 @@ section h1{
     gap: 15px; /* Espaço entre as solicitações */
 }
 
+.reports{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 /* Estilo para cada solicitação individual */
-.request-item {
+.request-item, .reports-item {
     background-color: #10141d;
     padding: 1.5rem;
     border-radius: 8px;
@@ -120,19 +126,19 @@ section h1{
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.request-item:hover {
+.request-item:hover, .reports-item:hover {
     transform: translateY(-5px); /* Elevação no hover */
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
 /* Estilo para o primeiro parágrafo */
-.request-item p:first-of-type {
+.request-item p:first-of-type, .reports-item p:first-of-type {
     font-size: 1.2rem;
     font-weight: bold;
 }
 
 /* Estilo para os outros parágrafos */
-.request-item p {
+.request-item p, .reports-item p{
     margin: 10px 0;
     color: #ffffff; /* Branco para os demais parágrafos */
 }

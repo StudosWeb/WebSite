@@ -69,6 +69,17 @@
         </div>
     </div>
 
+    <div id="error-modal" class="error-modal hide">
+        <div class="error-content">
+            <h2>Reportar Erro</h2>
+            <textarea id="error-description" placeholder="Descreva o erro aqui..." rows="4" required></textarea>
+            <label for="resumo-id">ID DO RESUMO:</label>
+            <input type="text" id="resumo-id" readonly>
+            <button id="send-error">Enviar</button>
+            <button id="close-error-modal">Fechar</button>
+        </div>
+    </div>
+
     <!-- Configurar o Firebase e o Firestore -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore-compat.js"></script>
@@ -79,59 +90,174 @@
     <script src="../js/auth-guard.js"></script>
     <script>
 
-        function showLoadingModal() {
-            const loadingModal = document.getElementById('loading-modal');
-            loadingModal.classList.remove('hide');
+            // Funções para mostrar e ocultar o modal de carregamento
+function showLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.remove('hide');
+}
+
+function hideLoadingModal() {
+    const loadingModal = document.getElementById('loading-modal');
+    loadingModal.classList.add('hide');
+}
+
+// Função para abrir o modal de erro
+function openErrorModal(resumoId) {
+    verificarDocumento(resumoId).then(isAllowed => {
+        if (isAllowed) {
+            const errorModal = document.getElementById('error-modal');
+            const errorDescription = document.getElementById('error-description');
+            const resumoIdInput = document.getElementById('resumo-id');
+            
+            errorDescription.value = ''; // Limpar o campo de descrição
+            resumoIdInput.value = resumoId; // Definir o ID do resumo no input
+
+            errorModal.classList.remove('hide');
+
+            // Remover eventos duplicados do botão "Fechar" e "Enviar"
+            document.getElementById('close-error-modal').removeEventListener('click', closeModal);
+            document.getElementById('send-error').removeEventListener('click', () => sendErrorReport(resumoId));
+
+            // Adicionar eventos novamente
+            document.getElementById('close-error-modal').addEventListener('click', closeModal);
+            document.getElementById('send-error').addEventListener('click', () => sendErrorReport(resumoId));
+        } else {
+            alert('Você só pode fazer um report.')
+            hideLoadingModal()
         }
+    });
+}
 
-        function hideLoadingModal() {
-            const loadingModal = document.getElementById('loading-modal');
-            loadingModal.classList.add('hide');
+// Função para verificar se o usuário já fez um reporte
+async function verificarDocumento(resumoId) {
+    const user = firebase.auth().currentUser;
+
+    if (user) {
+        const uid = user.uid;
+
+        try {
+            const doc = await firebase.firestore().collection('reportsSummary').doc(uid).get();
+            
+            // Se o documento existe, o usuário já fez um reporte
+            return !doc.exists;
+        } catch (error) {
+            console.error('Erro ao verificar documento:', error);
+            return false;
         }
-        // Configurar o Firebase
-        const db = firebase.firestore();
+    } else {
+        alert('Usuário não autenticado.');
+        return false;
+    }
+}
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const resumosList = document.getElementById('resumos-list');
 
-            // Buscar e exibir resumos da matéria 'matematica'
-            db.collection('materias').doc('portugues').collection('resumos').get()
-                .then((querySnapshot) => {
-                    if (querySnapshot.empty) {
-                        resumosList.innerHTML = '<li style="color: red;">Nenhum resumo foi encontrado. Pedimos desculpas por isso.<a href="addSummary" id="addResumer" style="display: none;">Add Resumo</a></li>';
-                        return;
-                    }
+// Função para fechar o modal de erro
+function closeModal() {
+    const errorModal = document.getElementById('error-modal');
+    errorModal.classList.add('hide');
+    setTimeout(() => {
+        hideLoadingModal();
+    }, 500);
+}
 
-                    querySnapshot.forEach((doc) => {
-                        const resumo = doc.data();
+// Função para enviar o relatório de erro
+function sendErrorReport(resumoId) {
+    showLoadingModal();
 
-                        const resumoItem = document.createElement('li');
+    const errorDescription = document.getElementById('error-description').value;
+    const resumoIdInput = document.getElementById('resumo-id').value;
 
-                        const title = document.createElement('div');
-                        title.className = 'resume-title';
-                        title.textContent = resumo.title || 'Título não disponível';
+    if (errorDescription && resumoIdInput) {
+        const user = firebase.auth().currentUser;
 
-                        const summary = document.createElement('div');
-                        summary.className = 'resume-summary';
-                        summary.textContent = resumo.summary || 'Resumo não disponível';
+        if (user) {
+            const uid = user.uid;
 
-                        resumoItem.appendChild(title);
-                        resumoItem.appendChild(summary);
+            // Usando o UID do usuário como ID do documento
+            firebase.firestore().collection('reportsSummary').doc(uid).set({
+                userId: uid,
+                resumoId: resumoIdInput,
+                error: errorDescription,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                hideLoadingModal();
+                closeModal();
+            }).catch((error) => {
+                hideLoadingModal();
+                console.error('Erro ao enviar o relatório:', error);
+                alert('Ocorreu um erro ao enviar o relatório. Tente novamente.');
+            });
+        } else {
+            hideLoadingModal();
+            alert('Usuário não autenticado.');
+        }
+    } else {
+        hideLoadingModal();
+        alert('Por favor, descreva o erro.');
+    }
+}
 
-                        resumosList.appendChild(resumoItem);
-                    });
-                })
-                .catch((error) => {
-                    console.error('Erro ao buscar resumos:', error);
-                });
+
+// Função para reportar um erro
+function reportError(resumoId) {
+    showLoadingModal();
+    setTimeout(() => {
+        openErrorModal(resumoId);
+    }, 500); // Adicionar um pequeno atraso para a transição do modal de carregamento
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const resumosList = document.getElementById('resumos-list');
+
+    function fetchAndDisplayResumos() {
+        showLoadingModal();
+
+        firebase.firestore().collection('materias').doc('portugues').collection('resumos').onSnapshot((querySnapshot) => {
+            resumosList.innerHTML = ''; // Limpar a lista antes de adicionar novos itens
+
+            if (querySnapshot.empty) {
+                resumosList.innerHTML = '<li style="color: red;">Nenhum resumo foi encontrado. Pedimos desculpas por isso.<a href="addSummary" id="addResumer" style="display: none;">Add Resumo</a></li>';
+                hideLoadingModal();
+                return;
+            }
+
+            querySnapshot.forEach((doc) => {
+                const resumo = doc.data();
+                const resumoId = doc.id; // Obter o ID do documento
+
+                const resumoItem = document.createElement('li');
+
+                const title = document.createElement('div');
+                title.className = 'resume-title';
+                title.textContent = resumo.title || 'Título não disponível';
+
+                const summary = document.createElement('div');
+                summary.className = 'resume-summary';
+                summary.textContent = resumo.summary || 'Resumo não disponível';
+
+                // Criar e adicionar o botão "Reportar Erro"
+                const reportErrorButton = document.createElement('button');
+                reportErrorButton.textContent = 'Reportar Erro';
+                reportErrorButton.className = 'report-error-button';
+                reportErrorButton.addEventListener('click', () => reportError(resumoId));
+
+                resumoItem.appendChild(title);
+                resumoItem.appendChild(summary);
+                resumoItem.appendChild(reportErrorButton);
+
+                resumosList.appendChild(resumoItem);
+            });
+
+            hideLoadingModal();
+        }, (error) => {
+            console.error('Erro ao buscar resumos:', error);
+            hideLoadingModal();
         });
+    }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            showLoadingModal()
-            setTimeout(() => {
-                hideLoadingModal()
-            }, 1000)
-        });
+    fetchAndDisplayResumos();
+});
+
     </script>
 </body>
 </html>

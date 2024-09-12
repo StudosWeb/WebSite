@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fascinate+Inline&display=swap');
         body {
             font-family: 'Outfit', sans-serif;
             background-color: #0a0c12;
@@ -47,6 +48,7 @@
         }
 
         .menu ul li {
+            box-sizing: border-box;
             position: relative; /* Adiciona position relative para garantir que a posição absoluta funcione corretamente */
         }
 
@@ -101,6 +103,7 @@
         }
 
         #resumos-list li {
+            position: relative; /* Adiciona a posição relativa ao item da lista */
             background-color: #0e1017;
             border-radius: 8px;
             box-shadow: 0 4px 8px #00000093;
@@ -117,8 +120,11 @@
 
         .resume-title {
             font-size: 1.5rem;
-            font-weight: bold;
+            font-weight: 400;
+            letter-spacing: .3rem;
+            color: #1d7fc0;
             margin-bottom: 0.7rem;
+            font-family: "Fascinate Inline", sans-serif;
         }
 
         .resume-summary {
@@ -160,7 +166,7 @@
         }
 
         .loading-content {
-            background-color: #151515;
+            background-color: #0e1017;
             padding: 20px;
             border-radius: 10px;
             display: flex;
@@ -238,4 +244,124 @@
         bottom: -7px;
         transition: color .5s ease-in-out; /* Transição de cor, se necessário */
     }
+}
+
+.report-error-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 2px solid #ff1e1e;
+    background-color: transparent;
+    color: #ff1e1e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.3s ease-in-out;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+.report-error-button:hover {
+    background-color: #ff1e1e;
+    color: #fff;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        background-color: transparent;
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        background-color: rgba(255, 30, 30, 0.1);
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+    }
+    100% {
+        transform: scale(1);
+        background-color: transparent;
+        box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+    }
+}
+
+.error-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.error-modal.hide {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.error-content {
+    width: 100%;
+    max-width: 350px;
+    box-sizing: border-box;
+    background-color: #0e1017;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.error-content textarea {
+    width: 100%;
+    min-height: 100px; /* Defina a altura mínima desejada */
+    max-height: 200px; /* Defina a altura máxima desejada, se necessário */
+    padding: 10px;
+    border: 1px solid #292929;
+    border-radius: 5px;
+    background-color: #0a0c12;
+    color: #fff;
+    resize: none; /* Desativa o redimensionamento da textarea */
+    box-sizing: border-box; /* Inclui padding e border no cálculo da largura/altura total */
+    margin-bottom: 10px;
+}
+
+
+.error-content input {
+    width: 93%;
+    padding: 10px;
+    border: 1px solid #292929;
+    border-radius: 5px;
+    background-color: #0a0c12;
+    color: #fff;
+}
+
+.error-content button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #116acf;
+    color: #fff;
+    font-weight: bold;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.error-content button:hover {
+    background-color: #0e5a8a;
+}
+
+#close-error-modal {
+    background-color: #e60000;
+}
+
+#close-error-modal:hover {
+    background-color: #c00000;
 }

@@ -1,4 +1,5 @@
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Função para verificar o campo resummer no Firestore
 function checkResummer() {

@@ -230,6 +230,9 @@ i.fa-graduation-cap {
 
 /* Responsividade para telas menores */
 @media (max-width: 600px) {
+    body{
+        overflow-x: hidden;
+    }
     button {
         padding: 10px 16px;
         font-size: 14px;
@@ -237,6 +240,10 @@ i.fa-graduation-cap {
     }
 
     .icones {
-        right: -80px;
+        left: 170px;
+    }
+
+    main {
+        width: 90%;
     }
 }

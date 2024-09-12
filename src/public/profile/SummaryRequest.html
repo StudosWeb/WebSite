@@ -7,6 +7,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <title>Summary Request</title>
     <style>
+        .status{
+            width: 100%;
+            text-align: center;
+            display: flex;
+            gap: rem;
+        }
         .status span#status-name{
             font-size: 1rem;
             color: #fff;
@@ -53,6 +59,47 @@
                 box-shadow: 0 0 10px #0067d5;
             }
         }
+
+        .time-close{
+            width: 100%;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .time-close span#hours, .time-close span#minutes, .time-close span#seconds{
+            padding: 15px;
+            border: 2px solid #2222227f;
+            border-radius: 8px;
+            color: #007bff;
+            box-shadow: 0 0 10px #131313;
+        }
+
+        .time-close span#div{
+            padding: 15px;
+        }
+
+        .time-close p {
+            color: #007bff;
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 600px) {
+            .status {
+                width: 80%;
+                gap: .2rem;
+            }
+
+            .status span#status-name{
+                font-size: .8rem;
+            }
+
+            .status span#divisao{
+                display: none;
+            }
+            .status span.pulse{
+                width: 14px;
+                height: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -83,6 +130,14 @@
                 <span id="status-name">Reprovado</span>
             </div>
         </div>
+        <div class="time-close">
+            <p>Fechamento do Ticket:</p><br>
+            <span id="hours">00</span>
+            <span id="div">:</span>
+            <span id="minutes">00</span>
+            <span id="div">:</span>
+            <span id="seconds">00</span>
+        </div>
     </div>
  </main>
 
@@ -100,9 +155,53 @@
     <script src="../../../firebaseConfig.js"></script>
 
     <script>
- // Configurar o Firebase
+// Configurar o Firebase
 const db = firebase.firestore();
 const auth = firebase.auth();
+
+let countdownInterval;
+const totalCountdownTime = 2.5 * 60 * 60 * 1000; // 2 horas e 30 minutos em milissegundos
+
+// Função para iniciar a contagem regressiva
+function startCountdown(userId) {
+    const startTime = localStorage.getItem('countdownStart') || Date.now();
+    localStorage.setItem('countdownStart', startTime);
+
+    const endTime = parseInt(startTime) + totalCountdownTime;
+
+    countdownInterval = setInterval(() => {
+        const now = Date.now();
+        const remainingTime = endTime - now;
+
+        if (remainingTime <= 0) {
+            clearInterval(countdownInterval);
+            deleteSummary(userId);
+        } else {
+            updateCountdownDisplay(remainingTime);
+        }
+    }, 1000);
+}
+
+// Função para atualizar o display do tempo restante
+function updateCountdownDisplay(remainingTime) {
+    const hours = Math.floor((remainingTime / (1000 * 60 * 60)) % 24);
+    const minutes = Math.floor((remainingTime / (1000 * 60)) % 60);
+    const seconds = Math.floor((remainingTime / 1000) % 60);
+
+    document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+    document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+    document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+}
+
+// Função para excluir o resumo do Firestore após a contagem
+function deleteSummary(userId) {
+    db.collection('SummaryRequest').doc(userId).delete().then(() => {
+        console.log('Resumo excluído após o término da contagem.');
+        localStorage.removeItem('countdownStart'); // Remove a contagem do localStorage
+    }).catch((error) => {
+        console.error('Erro ao excluir o documento:', error);
+    });
+}
 
 // Função para carregar o status do resumo
 function loadStatus() {
@@ -120,7 +219,7 @@ function loadStatus() {
                 // Atualizar o título e o assunto
                 document.getElementById('title').textContent = data.title || 'Sem Título';
                 
-                // Atualizar o assunto com base no valor de data.subject
+                // Atualizar o assunto
                 let subjectText;
                 switch (data.subject) {
                     case 'matematica':
@@ -141,7 +240,6 @@ function loadStatus() {
                     case 'ingles':
                         subjectText = 'Inglês';
                         break;
-                    // Adicione outros casos conforme necessário
                     default:
                         subjectText = 'Outro';
                 }
@@ -150,31 +248,32 @@ function loadStatus() {
                 // Atualizar o status
                 const status = data.status || {};
 
-                // Inicialmente mostrar todos os status exceto Reprovado
-                document.querySelector('.reprovado').style.display = 'none';
-                document.querySelector('.enviado').style.display = 'flex';
-                document.querySelector('.revisando').style.display = 'flex';
-                document.querySelector('.pendente').style.display = 'flex';
+                // Resetar todos os status para garantir que somente um terá a classe 'ativo'
+                document.querySelectorAll('.status .pulse').forEach(pulse => {
+                    pulse.classList.remove('ativo');
+                });
 
-                // Remove a classe ativo de todos os status
-                document.querySelectorAll('.status .pulse').forEach(pulse => pulse.classList.remove('ativo'));
+                // Verificar o status e iniciar a contagem
+                if (status.Reprovado || status.Enviado) {
+                    startCountdown(userId);
+                }
 
+                // Aplicar o status correto sem ocultar os outros
                 if (status.Reprovado) {
                     document.querySelector('.reprovado').style.display = 'flex';
-                    document.querySelector('.enviado').style.display = 'none'; // Ocultar "Enviado" se "Reprovado" estiver true
                     document.querySelector('.reprovado .pulse').classList.add('ativo');
+                    document.querySelector('.enviado').style.display = 'none';
                 } else if (status.Enviado) {
-                    document.querySelector('.enviado').style.display = 'flex';
                     document.querySelector('.enviado .pulse').classList.add('ativo');
                 } else if (status.Revisando) {
-                    document.querySelector('.revisando').style.display = 'flex';
                     document.querySelector('.revisando .pulse').classList.add('ativo');
                 } else {
-                    document.querySelector('.pendente').style.display = 'flex';
                     document.querySelector('.pendente .pulse').classList.add('ativo');
                 }
             } else {
                 console.log('Nenhum documento encontrado para o usuário:', userId);
+                document.getElementById('title').textContent = 'Não Encontrado';
+                document.getElementById('subject').textContent = 'Não Encontrado';
             }
         }, (error) => {
             console.error('Erro ao obter o documento:', error);
@@ -197,6 +296,7 @@ function init() {
 
 // Chamar a função para inicializar a aplicação
 init();
+
     </script>
 </body>
 </html>
