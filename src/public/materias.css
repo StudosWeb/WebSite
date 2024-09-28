@@ -199,6 +199,7 @@
     }
 
     .menu-mobile {
+        z-index: 1000;
         align-items: start;
         flex-direction: column;
         position: absolute;
