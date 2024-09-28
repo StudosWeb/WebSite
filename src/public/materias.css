@@ -48,6 +48,7 @@
         }
 
         .menu ul li {
+            z-index: 100;
             box-sizing: border-box;
             position: relative; /* Adiciona position relative para garantir que a posição absoluta funcione corretamente */
         }
@@ -199,7 +200,7 @@
     }
 
     .menu-mobile {
-        z-index: 1000;
+        z-index: 999;
         align-items: start;
         flex-direction: column;
         position: absolute;
