@@ -38,10 +38,10 @@
         <button type="button" onclick="notfs()"><i class="bi bi-bell-fill"></i></button>
     </div>
 
-    <div class="fullscreen">
+    <!-- <div class="fullscreen">
         <h1>Em Manutenção</h1>
         <p><b style="color: #116acf">Previsão:</b>  30/10/24</p>
-    </div>
+    </div> -->
 
     <nav class="menu-lateral">
         <ul>
@@ -85,17 +85,70 @@
 
     <section id="duvidas">
 
-        <h1>Canal #1</h1>
+        <h1>Canais</h1>
         <br>
         <br>
-        <ul id="comment">
-            
-        </ul>
-        <div class="inputs">
-            <input type="text" id="comment" placeholder="Digite aqui">
-            <button type="button" id="post"><i class="bi bi-send"></i></button>
+        <div class="channels">
+            <div class="info-channel">
+                <h3>Canais Oficiais</h3>
+            </div>
+            <div class="channel" style="opacity: 1;" onclick="openAnuncios()">
+                <i class="bi bi-megaphone-fill"></i>
+                <div class="infos">
+                    <div class="name">Anúncios</div>
+                    <div class="description">Entre no canal para ver as atualizações!</div>
+                </div>
+            </div>
+            <div class="channel">
+                <i class="bi bi-question"></i>
+                <div class="infos">
+                    <div class="name">Dúvidas</div>
+                    <div class="description">Entre no canal para tirar suas dúvidas!</div>
+                </div>
+            </div>
+            <br>
+            <div class="info-channel">
+                <h3>Canais de Entreterimento</h3>
+            </div>
+            <div class="channel">
+                <i class="bi bi-chat-fill"></i>
+                <div class="infos">
+                    <div class="name">Chat</div>
+                    <div class="description">Converse com outros membros do site em tempo real!</div>
+                </div>
+            </div>
         </div>
+        
     </section>
+
+    <div class="channel-modal">
+        <div class="channel-modal-content">
+            <div class="header">
+                <i class="bi bi-chevron-left" style="cursor: pointer;" onclick="closeAnuncios()"></i>
+                <div class="infos">
+                    <i class="bi bi-megaphone-fill"></i>
+                    <div class="name" style="color: #fff;">Anúncios</div>
+                </div>
+            </div>
+
+            <div class="chat-messages">
+                <div class="message">
+                    <p id="message-txt">Este canal foi criado exclusivamente para compartilhar atualizações e novidades sobre o site. Apenas administradores podem postar aqui, garantindo que os membros tenham acesso a informações relevantes sem distrações.</p>
+                    <p id="message-hour">20:07</p>
+                    <!-- <button>
+                        <i class="bi bi-box-arrow-up-right"></i>
+                        Ver Mais
+                    </button> -->
+                </div>
+            </div>
+
+            <div class="inputs">
+                <p style="height: 44px; width: 100%; display: flex; align-items: center; justify-content: center; color: #ffffffda;">Você não pode falar neste canal!</p>
+                <input type="text" id="comment" placeholder="Digite aqui" style="display: none;">
+                <button type="button" id="post" style="display: none;"><i class="bi bi-send"></i></button>
+            </div>
+        </div>
+    </div>
 
     <!-- Carregue o Firebase e a Configuração -->
     <script src="https://www.gstatic.com/firebasejs/10.13.1/firebase-app-compat.js"></script>
@@ -120,161 +173,19 @@
     </div>
 </div>
 
+        <script>
+            function openAnuncios() {
+                const modal = document.querySelector('.channel-modal');
+                modal.style.right = "0";
+            }
+
+            function closeAnuncios() {
+                const modal = document.querySelector('.channel-modal');
+                modal.style.right = "-100%";
+            }
+        </script>
+
     <script>
-        
-// Carregar todos os comentários ao carregar a página e configurar o listener
-window.addEventListener('DOMContentLoaded', () => {
-    // Configurar o listener para a coleção 'comment'
-    db.collection('comment').onSnapshot((snapshot) => {
-        // Limpar a lista de comentários
-        const commentsList = document.getElementById('comments');
-        commentsList.innerHTML = '';
-
-        // Adicionar cada comentário à interface
-        snapshot.forEach(async (doc) => {
-            const commentData = doc.data();
-            const commentId = doc.id;
-
-            addCommentToUI(commentData.name, commentData.comment, commentId);
-
-            // Carregar as respostas da subcoleção 'Responses'
-            const responsesSnapshot = await db.collection('comment').doc(commentId).collection('Responses').get();
-            const responsesList = document.getElementById(commentId).querySelector('.responses');
-
-            responsesSnapshot.forEach(responseDoc => {
-                const responseData = responseDoc.data();
-                addResponseToUI(responseData.name, responseData.response, responsesList);
-            });
-        });
-    });
-});
-
-// Função para postar um comentário
-document.getElementById('post').addEventListener('click', async () => {
-    const commentText = document.getElementById('comment').value;
-    const user = auth.currentUser; // Usuário autenticado
-    const uid = user.uid; // UID do usuário
-
-    if (commentText.trim() !== '') {
-        try {
-            // Pegue o nome do usuário da coleção 'users'
-            const userDoc = await db.collection('users').doc(uid).get();
-            const userName = userDoc.data().name;
-
-            // Adicione o comentário na coleção 'comment' com um ID gerado automaticamente
-            await db.collection('comment').add({
-                name: `@${userName}`, // Adicione o @ no nome
-                comment: commentText
-            });
-
-            // Limpe o campo de texto
-            document.getElementById('comment').value = '';
-        } catch (error) {
-            console.error('Erro ao postar o comentário:', error);
-        }
-    } else {
-        alert('O campo de comentário não pode estar vazio.');
-    }
-});
-
-// Função para adicionar o comentário à interface
-function addCommentToUI(name, comment, commentId) {
-    const commentsList = document.getElementById('comments');
-
-    const commentItem = document.createElement('li');
-    commentItem.id = commentId; // Definir o ID do comentário como o ID do documento
-    commentItem.innerHTML = `
-        <div class="info">
-            <i class="bi bi-person-circle"></i>
-            <div class="info-text">
-                <p>${name}</p>
-                <h3>${comment}</h3>
-            </div>
-        </div>
-        <button type="button" class="reply-button">Responder</button>
-        <ul class="responses"></ul>
-    `;
-
-    commentsList.appendChild(commentItem);
-
-    // Adicionar evento ao botão "Responder"
-    commentItem.querySelector('.reply-button').addEventListener('click', () => {
-        const replyText = prompt('Digite sua resposta:');
-        if (replyText) {
-            postReply(commentId, replyText, commentItem.querySelector('.responses'));
-        }
-    });
-}
-
-// Função para postar uma resposta em um comentário
-async function postReply(commentId, replyText, responsesList) {
-    const user = auth.currentUser;
-    const uid = user.uid;
-
-    try {
-        // Buscar o nome do usuário
-        const userDoc = await db.collection('users').doc(uid).get();
-        const userName = userDoc.data().name;
-
-        // Adicionar a resposta na subcoleção 'Responses'
-        await db.collection('comment').doc(commentId).collection('Responses').add({
-            name: `@${userName}`,
-            response: replyText
-        });
-
-        // Atualizar a interface com a nova resposta
-        addResponseToUI(`@${userName}`, replyText, responsesList);
-    } catch (error) {
-        console.error('Erro ao postar a resposta:', error);
-    }
-}
-
-// Função para adicionar a resposta à interface
-function addResponseToUI(name, response, responsesList) {
-    const responseItem = document.createElement('li');
-    responseItem.innerHTML = `
-        <div class="info">
-            <i class="bi bi-person-circle"></i>
-            <div class="info-text">
-                <p>${name}</p>
-                <h3>${response}</h3>
-            </div>
-        </div>
-    `;
-
-    responsesList.appendChild(responseItem);
-}
-
-
-        function showLoadingModal() {
-    const loadingModal = document.getElementById('loading-modal');
-    loadingModal.classList.remove('hide');
-}
-
-function hideLoadingModal() {
-    const loadingModal = document.getElementById('loading-modal');
-    loadingModal.classList.add('hide');
-}
-
-        // Hover e click menu
-        const menuItem = document.querySelectorAll('.item-menu');
-
-        function selectLink() {
-            menuItem.forEach(item => item.classList.remove('ativo'));
-            this.classList.add('ativo');
-        }
-
-        menuItem.forEach(item => item.addEventListener('click', selectLink));
-
-        // Expandir menu
-        const btnExp = document.querySelector('#btn-exp');
-        const menuSide = document.querySelector('.menu-lateral');
-
-        if (btnExp) {
-            btnExp.addEventListener('click', function() {
-                menuSide.classList.toggle('expandir');
-            });
-        }
 
         const auth = firebase.auth();
         const db = firebase.firestore();
